@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/apps/">
+    <Project Path="apps/AwakeWord.TestApp/AwakeWord.TestApp.csproj" />
+    <Project Path="apps/AwakeWord.FileProcessor/AwakeWord.FileProcessor.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/AwakeWord.Core/AwakeWord.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AwakeWord.Core.Tests/AwakeWord.Core.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,7 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "mkdir": true,
+        "dotnet sln": true,
+        "git init": true
+    }
+}
