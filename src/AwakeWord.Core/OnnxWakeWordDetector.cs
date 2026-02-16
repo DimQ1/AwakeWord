@@ -42,6 +42,19 @@ public sealed class OnnxWakeWordDetector : IAwakeWordDetector
     private readonly List<float[]> _featureBuffer = new();
     private const int FeatureMaxLen = 120;
 
+    // Cooldown: number of real audio chunks to process after reset before
+    // allowing detection.  Prevents the warm-up embeddings from immediately
+    // re-triggering the classifier in an infinite detect→reset→detect loop.
+    private int _cooldownChunks;
+    private const int CooldownAfterDetection = 20; // ~1.6 s @ 80 ms/chunk
+
+    // Confidence smoothing and consecutive detection gating
+    private readonly float[] _confidenceWindow;
+    private int _confidenceIndex;
+    private int _confidenceCount;
+    private float _confidenceSum;
+    private int _consecutiveHits;
+
     public OnnxWakeWordDetector(WakeWordConfig config)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -66,6 +79,8 @@ public sealed class OnnxWakeWordDetector : IAwakeWordDetector
         }
 
         WarmUpFeatureBuffer();
+
+        _confidenceWindow = new float[_config.SmoothingWindow];
     }
 
     public string WakeWord => _config.WakeWord;
@@ -135,8 +150,22 @@ public sealed class OnnxWakeWordDetector : IAwakeWordDetector
         // 3. Run wake-word classifier on the latest feature window
         if (anyProcessed && _featureBuffer.Count >= _config.FeatureFrames)
         {
+            // Skip classification during cooldown period after a detection/reset
+            if (_cooldownChunks > 0)
+            {
+                _cooldownChunks--;
+                return false;
+            }
+
             confidence = RunWakeWordClassifier();
+            confidence = AddConfidenceSample(confidence);
+
             if (confidence >= _config.DetectionThreshold)
+                _consecutiveHits++;
+            else
+                _consecutiveHits = 0;
+
+            if (_consecutiveHits >= _config.MinConsecutiveDetections)
             {
                 Reset();
                 return true;
@@ -161,6 +190,11 @@ public sealed class OnnxWakeWordDetector : IAwakeWordDetector
 
         _featureBuffer.Clear();
         WarmUpFeatureBuffer();
+
+        ClearConfidenceSmoothing();
+
+        // After reset, wait for enough real audio to replace warm-up features
+        _cooldownChunks = CooldownAfterDetection;
     }
 
     public void Dispose()
@@ -186,6 +220,34 @@ public sealed class OnnxWakeWordDetector : IAwakeWordDetector
         var embeddings = ComputeEmbeddingsForClip(warmupSamples);
         foreach (var emb in embeddings)
             _featureBuffer.Add(emb);
+    }
+
+    private float AddConfidenceSample(float value)
+    {
+        if (_confidenceCount < _confidenceWindow.Length)
+        {
+            _confidenceWindow[_confidenceIndex] = value;
+            _confidenceSum += value;
+            _confidenceCount++;
+        }
+        else
+        {
+            var old = _confidenceWindow[_confidenceIndex];
+            _confidenceWindow[_confidenceIndex] = value;
+            _confidenceSum += value - old;
+        }
+
+        _confidenceIndex = (_confidenceIndex + 1) % _confidenceWindow.Length;
+        return _confidenceSum / _confidenceCount;
+    }
+
+    private void ClearConfidenceSmoothing()
+    {
+        Array.Clear(_confidenceWindow, 0, _confidenceWindow.Length);
+        _confidenceIndex = 0;
+        _confidenceCount = 0;
+        _confidenceSum = 0f;
+        _consecutiveHits = 0;
     }
 
     /// <summary>Compute mel-spectrogram for a batch of raw PCM samples.</summary>

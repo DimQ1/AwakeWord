@@ -46,7 +46,17 @@ dotnet run --project apps/AwakeWord.FileProcessor -- \
     --threshold 0.5
 ```
 
-### 4. Programmatic Usage
+### 4. Trainer (GUI)
+
+Train a custom wake word model using the WPF trainer app:
+
+```bash
+dotnet run --project apps/AwakeWord.Trainer
+```
+
+See [docs/TRAINER.md](docs/TRAINER.md) for the full workflow and tips.
+
+### 5. Programmatic Usage
 
 ```csharp
 using AwakeWord.Core;

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AwakeWord.Core\AwakeWord.Core.csproj" />
+    <ProjectReference Include="..\..\src\AwakeWord.Training\AwakeWord.Training.csproj" />
   </ItemGroup>
 
   <ItemGroup>

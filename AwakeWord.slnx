@@ -2,9 +2,11 @@
   <Folder Name="/apps/">
     <Project Path="apps/AwakeWord.TestApp/AwakeWord.TestApp.csproj" />
     <Project Path="apps/AwakeWord.FileProcessor/AwakeWord.FileProcessor.csproj" />
+    <Project Path="apps/AwakeWord.Trainer/AwakeWord.Trainer.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AwakeWord.Core/AwakeWord.Core.csproj" />
+    <Project Path="src/AwakeWord.Training/AwakeWord.Training.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AwakeWord.Core.Tests/AwakeWord.Core.Tests.csproj" />

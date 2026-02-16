@@ -11,6 +11,12 @@ public sealed class WakeWordConfig
     /// <summary>Detection threshold (0–1). Higher = fewer false positives.</summary>
     public float DetectionThreshold { get; set; } = 0.5f;
 
+    /// <summary>Window size for averaging confidence scores (default: 5).</summary>
+    public int SmoothingWindow { get; set; } = 5;
+
+    /// <summary>Number of consecutive averaged hits required to trigger (default: 2).</summary>
+    public int MinConsecutiveDetections { get; set; } = 2;
+
     /// <summary>Path to the mel-spectrogram ONNX model (melspectrogram.onnx).</summary>
     public string MelSpectrogramModelPath { get; set; } = string.Empty;
 
@@ -45,5 +51,11 @@ public sealed class WakeWordConfig
 
         if (FeatureFrames <= 0)
             throw new ArgumentOutOfRangeException(nameof(FeatureFrames), "Feature frames must be positive.");
+
+        if (SmoothingWindow <= 0)
+            throw new ArgumentOutOfRangeException(nameof(SmoothingWindow), "Smoothing window must be positive.");
+
+        if (MinConsecutiveDetections <= 0)
+            throw new ArgumentOutOfRangeException(nameof(MinConsecutiveDetections), "Min consecutive detections must be positive.");
     }
 }

@@ -19,7 +19,7 @@ static float GetFloatArg(string[] args, string name, float fallback)
 
 var modelsDir = GetArg(args, "--models-dir") ?? "models";
 var wakeWord = GetArg(args, "--wake-word") ?? "jarvis";
-var threshold = GetFloatArg(args, "--threshold", 0.5f);
+var threshold = GetFloatArg(args, "--threshold", 0.889f);
 
 var melspecPath = Path.Combine(modelsDir, "melspectrogram.onnx");
 var embeddingPath = Path.Combine(modelsDir, "embedding_model.onnx");
